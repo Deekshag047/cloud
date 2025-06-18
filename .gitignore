@@ -1,0 +1,16 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Environment variables (do NOT commit secrets!)
+.env
+
+# Virtual environment folder
+venv/
+
+# Firebase debug logs
+firebase-debug.log
+
+# OS files
+.DS_Store
+Thumbs.db
