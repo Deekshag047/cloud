@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Gemini Chatbot</title>
+  <title>Gemini Chat App</title>
 </head>
 <body>
-  <h2>Gemini Chatbot</h2>
-  <input type="text" id="messageInput" placeholder="Say something..." />
-  <button onclick="send()">Send</button>
-  <p><strong>Response:</strong> <span id="botResponse"></span></p>
+  <h1>Welcome to the Gemini Chatbot!</h1>
+  <form id="chat-form">
+    <input type="text" id="message" placeholder="Ask something..." required>
+    <button type="submit">Send</button>
+  </form>
+  <pre id="response"></pre>
 
   <script>
-    async function send() {
-      const msg = document.getElementById("messageInput").value;
-      const res = await fetch("/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
+    const form = document.getElementById('chat-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = document.getElementById('message').value;
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
       });
       const data = await res.json();
-      document.getElementById("botResponse").innerText = data.response || data.error;
-    }
+      document.getElementById('response').textContent = data.reply || data.error;
+    });
   </script>
 </body>
 </html>
