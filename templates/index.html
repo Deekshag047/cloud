@@ -1,28 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Gemini Chat App</title>
+  <meta charset="UTF-8">
+  <title>Gemini Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      margin-top: 60px;
+      background-color: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00796b;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #00796b;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    pre {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f1f8e9;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 15px;
+      color: #333;
+      min-height: 50px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to the Gemini Chatbot!</h1>
-  <form id="chat-form">
-    <input type="text" id="message" placeholder="Ask something..." required>
-    <button type="submit">Send</button>
-  </form>
-  <pre id="response"></pre>
+  <div class="container">
+    <h1>Gemini Chatbot</h1>
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Ask something..." required>
+      <button type="submit">Send</button>
+    </form>
+    <pre id="response">Awaiting your question...</pre>
+  </div>
 
   <script>
     const form = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message');
+    const responseBox = document.getElementById('response');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const message = document.getElementById('message').value;
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      responseBox.textContent = "Thinking... 🤖";
+
       const res = await fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
       });
+
       const data = await res.json();
-      document.getElementById('response').textContent = data.reply || data.error;
+      responseBox.textContent = data.reply || data.error || "Something went wrong.";
+      messageInput.value = "";
     });
   </script>
 </body>
