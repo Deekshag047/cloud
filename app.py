@@ -30,7 +30,7 @@ def chat():
     if "weather in" in user_input.lower():
         try:
             city = user_input.lower().split("weather in")[-1].strip()
-            url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric"
+            url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={bd50413ad3bac07f8e6115ebdbc39853}&units=metric"
             res = requests.get(url).json()
 
             if res.get("cod") != 200:
