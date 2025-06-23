@@ -3,21 +3,27 @@ import requests
 from flask import Flask, request, jsonify, render_template
 import google.generativeai as genai
 
-# Configure Gemini API
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-
-# Weather API key
+# Load API keys from environment variables
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY")
 
-# Initialize Gemini model
+# Debug logging
+print(f"✅ Loaded GEMINI_API_KEY: {'Yes' if GEMINI_API_KEY else 'Missing'}")
+print(f"✅ Loaded WEATHER_API_KEY: {'Yes' if WEATHER_API_KEY else 'Missing'}")
+
+# Configure Gemini
+genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
+# Initialize Flask app
 app = Flask(__name__)
 
+# Home page route
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html')  # Make sure templates/index.html exists
 
+# Chat route
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
@@ -26,30 +32,58 @@ def chat():
     if not user_input:
         return jsonify({"error": "No input provided"}), 400
 
-    # 🔍 Detect weather-related queries
+    # Check if the message is about weather
     if "weather in" in user_input.lower():
         try:
             city = user_input.lower().split("weather in")[-1].strip()
-            url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={bd50413ad3bac07f8e6115ebdbc39853}&units=metric"
-            res = requests.get(url).json()
 
-            if res.get("cod") != 200:
+            if not city:
+                return jsonify({"reply": "⚠️ Please provide a valid city name."})
+
+            url = (
+                f"https://api.openweathermap.org/data/2.5/weather?"
+                f"q={city}&appid={WEATHER_API_KEY}&units=metric"
+            )
+
+            print(f"🔍 Requesting weather for: {city}")
+            print(f"🌐 URL: {url}")
+
+            res = requests.get(url, timeout=5)
+            weather_data = res.json()
+            print(f"📦 API Response: {weather_data}")
+
+            if weather_data.get("cod") != 200:
                 return jsonify({"reply": f"⚠️ Couldn't find weather for '{city}'."})
 
-            weather = res["weather"][0]["description"].capitalize()
-            temp = res["main"]["temp"]
-            feels = res["main"]["feels_like"]
-            reply = f"🌤 Weather in {city.title()}:\n{weather}, {temp}°C (feels like {feels}°C)"
+            weather = weather_data["weather"][0]["description"].capitalize()
+            temp = weather_data["main"]["temp"]
+            feels = weather_data["main"]["feels_like"]
+
+            reply = (
+                f"🌤 Weather in {city.title()}:\n"
+                f"{weather}, {temp}°C (feels like {feels}°C)"
+            )
             return jsonify({"reply": reply})
+
+        except requests.exceptions.Timeout:
+            print("❌ Weather API timeout")
+            return jsonify({"reply": "⚠️ Weather request timed out."})
+
         except Exception as e:
+            print(f"❌ Error fetching weather: {e}")
             return jsonify({"reply": "⚠️ Error fetching weather."})
 
-    # 🤖 Default: use Gemini
+    # Default fallback: Gemini response
     try:
+        print(f"🤖 Sending to Gemini: {user_input}")
         response = model.generate_content(user_input)
+        print(f"🤖 Gemini response: {response.text}")
         return jsonify({"reply": response.text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
+    except Exception as e:
+        print(f"❌ Gemini error: {e}")
+        return jsonify({"error": "Something went wrong with Gemini."}), 500
+
+# Run the app locally
 if __name__ == '__main__':
     app.run(debug=True)
