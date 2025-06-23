@@ -5,7 +5,7 @@ import google.generativeai as genai
 
 # Load API keys from environment variables
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY")
+WEATHER_API_KEY = "1bb7f8ee7780545eedd88449ea4a6827"
 
 # Debug logging
 print(f"✅ Loaded GEMINI_API_KEY: {'Yes' if GEMINI_API_KEY else 'Missing'}")
